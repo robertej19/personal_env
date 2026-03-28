@@ -1,0 +1,123 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# Cyberpunk-style interactive shell config
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return ;;
+esac
+
+# ---- Readline / tab completion behavior ----
+bind 'set bell-style none'
+bind 'set show-all-if-ambiguous on'
+bind 'set colored-stats on'
+bind 'set colored-completion-prefix on'
+bind 'set completion-ignore-case on'
+bind 'set visible-stats on'
+bind 'TAB:menu-complete'
+
+# ---- History behavior ----
+HISTCONTROL=ignoreboth
+shopt -s histappend
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# Update LINES and COLUMNS after each command if needed
+shopt -s checkwinsize
+
+# Optional: recursive globbing with **
+# shopt -s globstar
+
+# Make less more friendly for non-text input files
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# Set variable identifying the chroot you work in
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# ---- Cyberpunk prompt colors ----
+# 46 = neon green
+# 51 = electric blue / neon cyan
+# 45 = cyan-blue accent
+CYBER_USER_HOST='\[\e[1;38;5;46m\]'
+CYBER_PATH='\[\e[1;38;5;51m\]'
+CYBER_SYMBOL='\[\e[1;38;5;45m\]'
+CYBER_RESET='\[\e[0m\]'
+
+# Detect color support
+case "$TERM" in
+    xterm-color|*-256color|screen-256color|tmux-256color) color_prompt=yes ;;
+esac
+
+# Uncomment to force color prompt
+# force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >/dev/null 2>&1; then
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1="${debian_chroot:+($debian_chroot)}${CYBER_USER_HOST}\u@\h${CYBER_RESET}:${CYBER_PATH}\w${CYBER_RESET}${CYBER_SYMBOL}\$ ${CYBER_RESET}"
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+
+unset color_prompt force_color_prompt
+
+# If this is an xterm/rxvt-compatible terminal, set the title
+case "$TERM" in
+    xterm*|rxvt*|screen*|tmux*)
+        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+        ;;
+esac
+
+# ---- Color support and aliases ----
+if [ -x /usr/bin/dircolors ]; then
+    if [ -r ~/.dircolors ]; then
+        eval "$(dircolors -b ~/.dircolors)"
+    else
+        eval "$(dircolors -b)"
+    fi
+
+    # Force filetype colors after dircolors initializes LS_COLORS
+    export LS_COLORS="${LS_COLORS}:di=1;38;5;51:ln=1;38;5;45:ex=1;38;5;46:so=1;38;5;201:pi=38;5;201:bd=1;38;5;226:cd=1;38;5;226"
+
+    alias ls='ls --color=auto'
+    # alias dir='dir --color=auto'
+    # alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# Optional GCC colors
+# export GCC_COLORS='error=01;38;5;201:warning=01;38;5;226:note=01;38;5;51:caret=01;38;5;46:locus=01:quote=01'
+
+# ---- Useful aliases ----
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias cdd='cd /mnt/c/Users/rober/OneDrive/Desktop'
+
+# Long-running command alert
+alias alert='notify-send --urgency=low -i terminal "Command finished"'
+
+# ---- User aliases ----
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# ---- Bash completion ----
+if ! shopt -oq posix; then
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
+    fi
+fi
