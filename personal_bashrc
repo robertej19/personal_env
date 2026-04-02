@@ -121,3 +121,11 @@ if ! shopt -oq posix; then
         . /etc/bash_completion
     fi
 fi
+
+nanol() {
+	if [ -z "$1" ]; then
+		echo "Usage: nanol <file>"
+		return 1
+	fi
+	nano +"$(wc -l < "$1")" "$1"
+}
