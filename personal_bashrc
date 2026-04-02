@@ -129,3 +129,6 @@ nanol() {
 	fi
 	nano +"$(wc -l < "$1")" "$1"
 }
+
+
+latestdir () { cd "$(ls -td -- */ | head -n1)"; }
